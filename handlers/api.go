@@ -41,10 +41,10 @@ func RetirarHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !exito {
-		responderJSON(w, http.StatusOK, map[string]interface{}{"status": "error", "mensaje": "Retiro rechazado: Fondos insuficientes."})
+		responderJSON(w, http.StatusOK, map[string]interface{}{"status": "error", "mensaje": "Retiro rechazado: Fondos insuficientes"})
 		return
 	}
-	responderJSON(w, http.StatusOK, map[string]interface{}{"status": "success", "mensaje": "Retiro exitoso.", "saldo": cuenta.ObtenerSaldo()})
+	responderJSON(w, http.StatusOK, map[string]interface{}{"status": "success", "mensaje": "Retiro exitoso", "saldo": cuenta.ObtenerSaldo()})
 }
 
 func AbonarHandler(w http.ResponseWriter, r *http.Request) {
@@ -64,10 +64,10 @@ func AbonarHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !exito {
-		responderJSON(w, http.StatusOK, map[string]interface{}{"status": "error", "mensaje": "Abono rechazado."})
+		responderJSON(w, http.StatusOK, map[string]interface{}{"status": "error", "mensaje": "Abono rechazado"})
 		return
 	}
-	responderJSON(w, http.StatusOK, map[string]interface{}{"status": "success", "mensaje": "Abono exitoso.", "saldo": cuenta.ObtenerSaldo()})
+	responderJSON(w, http.StatusOK, map[string]interface{}{"status": "success", "mensaje": "Abono exitoso", "saldo": cuenta.ObtenerSaldo()})
 }
 
 func HistorialUsuarioHandler(w http.ResponseWriter, r *http.Request) {

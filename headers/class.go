@@ -40,19 +40,19 @@ func (c *Cuenta) Retirar(cantidad float64) (bool, error) {
 
 	if cantidad < 0 {
 		tx.Estado = "ERROR"
-		tx.Mensaje = "no se pueden retirar cantidades negativas"
+		tx.Mensaje = "No se pueden retirar cantidades negativas"
 		c.Historial = append(c.Historial, tx)
 		return false, errors.New(tx.Mensaje)
 	}
 	if cantidad == 0 {
 		tx.Estado = "ERROR"
-		tx.Mensaje = "la cantidad a retirar debe ser mayor a cero"
+		tx.Mensaje = "La cantidad a retirar debe ser mayor a cero"
 		c.Historial = append(c.Historial, tx)
 		return false, errors.New(tx.Mensaje)
 	}
 	if cantidad > c.Saldo {
 		tx.Estado = "RECHAZADA"
-		tx.Mensaje = "saldo insuficiente"
+		tx.Mensaje = "Saldo insuficiente"
 		c.Historial = append(c.Historial, tx)
 		return false, nil
 	}
@@ -60,7 +60,7 @@ func (c *Cuenta) Retirar(cantidad float64) (bool, error) {
 	c.Saldo -= cantidad
 	tx.Estado = "EXITOSA"
 	tx.SaldoNuevo = c.Saldo
-	tx.Mensaje = "retiro procesado correctamente"
+	tx.Mensaje = "Retiro procesado correctamente"
 	c.Historial = append(c.Historial, tx)
 	return true, nil
 }
@@ -71,7 +71,7 @@ func (c *Cuenta) Abonar(cantidad float64) (bool, error) {
 
 	if cantidad <= 0 {
 		tx.Estado = "ERROR"
-		tx.Mensaje = "la cantidad a abonar debe ser mayor a cero"
+		tx.Mensaje = "La cantidad a abonar debe ser mayor a cero"
 		c.Historial = append(c.Historial, tx)
 		return false, errors.New(tx.Mensaje)
 	}
@@ -79,7 +79,7 @@ func (c *Cuenta) Abonar(cantidad float64) (bool, error) {
 	c.Saldo += cantidad
 	tx.Estado = "EXITOSA"
 	tx.SaldoNuevo = c.Saldo
-	tx.Mensaje = "abono procesado correctamente"
+	tx.Mensaje = "Abono procesado correctamente"
 	c.Historial = append(c.Historial, tx)
 	return true, nil
 }

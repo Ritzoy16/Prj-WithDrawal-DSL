@@ -213,14 +213,14 @@
                 const data = await res.json(); // Array de transacciones
                 
                 if (data.length === 0) {
-                    contenedor.innerHTML = "<p>No hay transacciones registradas.</p>";
+                    contenedor.innerHTML = "<p>No hay transacciones registradas</p>";
                     return;
                 }
 
                 let html = `<table>
                     <tr><th>Fecha</th><th>Tipo</th><th>Monto</th><th>Estado</th></tr>`;
                 
-                // Recorremos el JSON de atrás hacia adelante (la más reciente primero)
+                // Recorrer el JSON de atrás hacia adelante (la más reciente primero)
                 data.reverse().forEach(tx => {
                     let claseEstado = tx.estado === 'EXITOSA' ? 'tag-exitosa' : (tx.estado === 'RECHAZADA' ? 'tag-rechazada' : 'tag-error');
                     let fecha = new Date(tx.fecha).toLocaleString('es-PE');
@@ -236,7 +236,7 @@
                 contenedor.innerHTML = html;
 
             } catch (e) {
-                contenedor.innerHTML = "<p>Error al cargar el historial.</p>";
+                contenedor.innerHTML = "<p>Error al cargar el historial</p>";
             }
         }
 

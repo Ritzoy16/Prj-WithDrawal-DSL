@@ -20,7 +20,7 @@ func abrirNavegador(url string) {
 		err = exec.Command("open", url).Start()
 	}
 	if err != nil {
-		fmt.Println("⚠️ Abre manualmente:", url)
+		fmt.Println("Abre manualmente:", url)
 	}
 }
 
