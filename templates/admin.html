@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Administración - Banco</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #1e1e2f; color: #fff; margin: 0; padding: 20px; }
+        h1 { text-align: center; color: #20c997; }
+        .grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+        .card { background: #2a2a40; padding: 20px; border-radius: 10px; width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .card h2 { margin-top: 0; color: #fff; border-bottom: 2px solid #444; padding-bottom: 10px; }
+        .saldo { font-size: 24px; color: #ffc107; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #444; }
+        th { background: #1e1e2f; color: #adb5bd; }
+        .tag-exitosa { color: #28a745; font-weight: bold; }
+        .tag-rechazada { color: #fd7e14; font-weight: bold; }
+        .tag-error { color: #dc3545; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>🏦 Consola de Auditoría (Admin)</h1>
+    <p style="text-align: center; color: #adb5bd;">Visualizando saldos y todos los movimientos del sistema.</p>
+    
+    <div class="grid" id="admin-grid">
+        <!-- Aquí se inyectarán las tarjetas de los usuarios -->
+    </div>
+
+    <script>
+        async function cargarDatosAdmin() {
+            try {
+                const res = await fetch('/api/admin/data');
+                const usuarios = await res.json();
+                const grid = document.getElementById('admin-grid');
+                
+                grid.innerHTML = ""; // Limpiar
+
+                usuarios.forEach(user => {
+                    let filasHTML = "";
+                    
+                    // Ordenar historial del más reciente al más antiguo
+                    let historialOrdenado = user.historial.reverse();
+
+                    if (historialOrdenado.length === 0 || historialOrdenado[0] === null) {
+                        filasHTML = "<tr><td colspan='4'>Sin movimientos</td></tr>";
+                    } else {
+                        historialOrdenado.forEach(tx => {
+                            let claseEstado = tx.estado === 'EXITOSA' ? 'tag-exitosa' : (tx.estado === 'RECHAZADA' ? 'tag-rechazada' : 'tag-error');
+                            let fecha = new Date(tx.fecha).toLocaleTimeString('es-PE');
+                            
+                            filasHTML += `<tr>
+                                <td><small>${fecha}</small></td>
+                                <td>${tx.tipo}</td>
+                                <td>$${tx.monto.toFixed(2)}</td>
+                                <td class="${claseEstado}">${tx.estado}</td>
+                            </tr>`;
+                        });
+                    }
+
+                    let card = `
+                        <div class="card">
+                            <h2>${user.nombre}</h2>
+                            <p>Saldo actual: <span class="saldo">$${user.saldo.toFixed(2)}</span></p>
+                            <table>
+                                <tr><th>Hora</th><th>Tipo</th><th>Monto</th><th>Estado</th></tr>
+                                ${filasHTML}
+                            </table>
+                        </div>
+                    `;
+                    grid.innerHTML += card;
+                });
+
+            } catch (e) {
+                console.error("Error cargando datos", e);
+            }
+        }
+
+        // Cargar al iniciar y actualizar cada 5 segundos automáticamente
+        window.onload = () => {
+            cargarDatosAdmin();
+            setInterval(cargarDatosAdmin, 5000);
+        };
+    </script>
+</body>
+</html>
