@@ -7,21 +7,17 @@ import (
 )
 
 func main() {
-	// 1. Rutas para las acciones del banco
-	http.HandleFunc("/", handlers.IndexHandler)
-	http.HandleFunc("/retirar", handlers.RetirarHandler)
-	http.HandleFunc("/abonar", handlers.AbonarHandler)
+	// Rutas de la API (JSON)
+	http.HandleFunc("/api/saldo", handlers.SaldoHandler)
+	http.HandleFunc("/api/retirar", handlers.RetirarHandler)
+	http.HandleFunc("/api/abonar", handlers.AbonarHandler)
+	http.HandleFunc("/api/historial", handlers.HistorialHandler)
 
-	// 2. Ruta para ver el JSON de auditoría
-	http.HandleFunc("/api/historial", handlers.JSONHandler)
-
-	// 3. Servir archivos estáticos (CSS, imágenes)
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+	// Ruta para la página principal (HTML)
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "templates/index.html")
+	})
 
 	fmt.Println("Servidor Web corriendo en http://localhost:8080")
-	// Iniciar el servidor
-	err := http.ListenAndServe(":8080", nil)
-	if err != nil {
-		fmt.Printf("Error al iniciar el servidor: %v\n", err)
-	}
+	http.ListenAndServe(":8080", nil)
 }

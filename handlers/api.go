@@ -1,82 +1,88 @@
 package handlers
 
 import (
-	"fmt"
+	"encoding/json"
 	"net/http"
 	"prj_withdrawal/headers"
 	"strconv"
 )
 
-// Instancia global de la cuenta para el ejemplo
+// Instancia global para la cuenta
 var MiCuenta = headers.NewCuenta("Mauricio", 500.00)
 
-func parseMonto(w http.ResponseWriter, r *http.Request) (float64, bool) {
-	montoStr := r.FormValue("monto")
-	monto, err := strconv.ParseFloat(montoStr, 64)
-	if err != nil || monto <= 0 {
-		http.Error(w, "Monto inválido", http.StatusBadRequest)
-		return 0, false
-	}
-	return monto, true
+// Helper para responder en JSON
+func responderJSON(w http.ResponseWriter, status int, datos interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(datos)
 }
 
-// IndexHandler muestra la página principal
-func IndexHandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "templates/index.html")
+// SaldoHandler devuelve el saldo actual
+func SaldoHandler(w http.ResponseWriter, r *http.Request) {
+	responderJSON(w, http.StatusOK, map[string]interface{}{
+		"nombre": MiCuenta.Nombre(),
+		"saldo":  MiCuenta.ObtenerSaldo(),
+	})
 }
 
 // RetirarHandler procesa el formulario de retiro
 func RetirarHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-		return
-	}
-
-	monto, ok := parseMonto(w, r)
-	if !ok {
+	monto, err := strconv.ParseFloat(r.FormValue("monto"), 64)
+	if err != nil {
+		responderJSON(w, http.StatusBadRequest, map[string]string{"error": "Monto inválido"})
 		return
 	}
 
 	exito, err := MiCuenta.Retirar(monto)
 	if err != nil {
-		fmt.Fprintf(w, "Error: %v", err)
+		responderJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
 		return
 	}
 	if !exito {
-		fmt.Fprintf(w, "Retiro rechazado: Fondos insuficientes.")
+		responderJSON(w, http.StatusOK, map[string]interface{}{
+			"status":  "error",
+			"mensaje": "Retiro rechazado: Fondos insuficientes.",
+		})
 		return
 	}
 
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	responderJSON(w, http.StatusOK, map[string]interface{}{
+		"status":  "success",
+		"mensaje": "Retiro procesado con éxito.",
+		"saldo":   MiCuenta.ObtenerSaldo(),
+	})
 }
 
 // AbonarHandler procesa el formulario de abono
 func AbonarHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-		return
-	}
-
-	monto, ok := parseMonto(w, r)
-	if !ok {
+	monto, err := strconv.ParseFloat(r.FormValue("monto"), 64)
+	if err != nil {
+		responderJSON(w, http.StatusBadRequest, map[string]string{"error": "Monto inválido"})
 		return
 	}
 
 	exito, err := MiCuenta.Abonar(monto)
 	if err != nil {
-		fmt.Fprintf(w, "Error: %v", err)
+		responderJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
 		return
 	}
 	if !exito {
-		fmt.Fprintf(w, "Abono rechazado.")
+		responderJSON(w, http.StatusOK, map[string]interface{}{
+			"status":  "error",
+			"mensaje": "Abono rechazado.",
+		})
 		return
 	}
 
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	responderJSON(w, http.StatusOK, map[string]interface{}{
+		"status":  "success",
+		"mensaje": "Abono procesado con éxito.",
+		"saldo":   MiCuenta.ObtenerSaldo(),
+	})
 }
 
-// JSONHandler devuelve el historial en formato JSON
-func JSONHandler(w http.ResponseWriter, r *http.Request) {
+// HistorialHandler devuelve el JSON crudo de las transacciones
+func HistorialHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte(MiCuenta.ObtenerHistorialJSON()))
 }
