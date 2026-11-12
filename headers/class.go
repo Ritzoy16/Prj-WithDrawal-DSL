@@ -7,22 +7,21 @@ import (
 	"time" //Para registrar la fecha de la transacción
 )
 
-
 // Transaccion reperesenta el log de auditoría
 type Transaccion struct {
-	Tipo		string		`json:"tipo"`			// RETIRO, ABONO
-	Monto		float64		`json:"monto"`			// Cantidad solicitada
-	Estado		string		`json:"estado"`			// EXITOSA, RECHAZADA, ERROR
-	SaldoAnterior	float64		`json:"saldo_anterior"`		// Saldo antes de la operacion 
-	SaldoNuevo	float64 	`json:"saldo_nuevo"`		// Saldo después de la operación
-	Mensaje		string		`json:"mensaje_omitempty"`	// Detalle del error o éxito
-	Fecha		time.Time	`json:"fecha"`			// Timestamp
+	Tipo          string    `json:"tipo"`              // RETIRO, ABONO
+	Monto         float64   `json:"monto"`             // Cantidad solicitada
+	Estado        string    `json:"estado"`            // EXITOSA, RECHAZADA, ERROR
+	SaldoAnterior float64   `json:"saldo_anterior"`    // Saldo antes de la operacion
+	SaldoNuevo    float64   `json:"saldo_nuevo"`       // Saldo después de la operación
+	Mensaje       string    `json:"mensaje_omitempty"` // Detalle del error o éxito
+	Fecha         time.Time `json:"fecha"`             // Timestamp
 }
 
 // Cuenta representa la entidad de negocio
 type Cuenta struct {
-	saldo  float64
-	nombre string
+	saldo     float64
+	nombre    string
 	historial []Transaccion //NUEVO: Historial de Transacciones
 }
 
@@ -50,12 +49,12 @@ func (c *Cuenta) Retirar(cantidad float64) (bool, error) {
 	saldoAnt := c.saldo
 	//Creación de registro de la transacción
 	tx := Transaccion{
-			Tipo:		"RETIRO",
-			Monto:		cantidad,
-			SaldoAnterior:	saldoAnt,
-			SaldoNuevo:	saldoAnt,
-			Fecha:		time.Now(),
-		}
+		Tipo:          "RETIRO",
+		Monto:         cantidad,
+		SaldoAnterior: saldoAnt,
+		SaldoNuevo:    saldoAnt,
+		Fecha:         time.Now(),
+	}
 	if cantidad < 0 {
 		tx.Estado = "ERROR"
 		tx.Mensaje = "No se puede retirar cantidades negativas"
@@ -84,17 +83,17 @@ func (c *Cuenta) String() string {
 
 // Abonar intenta depositar una cantidad en la cuenta
 // Regla: No se pueden abonar cantidades negativas o cero
-func (c *Cuenta) Abonar(cantidad float64) (bool, error){
+func (c *Cuenta) Abonar(cantidad float64) (bool, error) {
 	saldoAnt := c.saldo
 	tx := Transaccion{
-			Tipo:		"ABONO",
-			Monto:		cantidad,
-			SaldoAnterior:	saldoAnt,
-			SaldoNuevo:	saldoAnt,
-			Fecha:		time.Now(),
-		}
+		Tipo:          "ABONO",
+		Monto:         cantidad,
+		SaldoAnterior: saldoAnt,
+		SaldoNuevo:    saldoAnt,
+		Fecha:         time.Now(),
+	}
 
-	if cantidad <= 0{
+	if cantidad <= 0 {
 		tx.Estado = "ERROR"
 		tx.Mensaje = "La cantidad a abonar debe ser mayor a cero"
 		c.historial = append(c.historial, tx)
@@ -108,11 +107,16 @@ func (c *Cuenta) Abonar(cantidad float64) (bool, error){
 	return true, nil //Escenario: Succesful deposit
 }
 
-//ObtenerHistorialJSON devuelve el historial de transacciones en formato JSON
-func (c *Cuenta) ObtenerHistorialJSON() string{
+// ObtenerHistorialJSON devuelve el historial de transacciones en formato JSON
+func (c *Cuenta) ObtenerHistorialJSON() string {
 	jsonData, err := json.MarshalIndent(c.historial, "", " ")
-	if err != nil{
+	if err != nil {
 		return fmt.Sprintf("Error generando JSON: %v", err)
 	}
 	return string(jsonData)
+}
+
+// ObtenerHistorial devuelve el slice de transacciones (necesario para el admin y filtros)
+func (c *Cuenta) ObtenerHistorial() []Transaccion {
+	return c.historial
 }
